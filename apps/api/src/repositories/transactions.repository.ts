@@ -97,7 +97,9 @@ async function replaceTransactionSplits(
     );
 }
 
-export type TransactionCreateRecord = Omit<Transaction, "id" | "createdAt" | "updatedAt">;
+export type TransactionCreateRecord = Omit<Transaction, "id" | "createdAt" | "updatedAt" | "workspaceId"> & {
+  workspaceId?: string | null;
+};
 type InstallmentSeriesCreateRecord = {
   id: string;
   userId: string;
@@ -399,6 +401,7 @@ export type RecurringRuleWithRelations = RecurringTransactionRule & {
 const transactionColumns = {
   id: transactions.id,
   userId: transactions.userId,
+  workspaceId: transactions.workspaceId,
   personId: transactions.personId,
   type: transactions.type,
   origin: transactions.origin,

@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { NotificationPanel } from "@/features/notifications/components/notification-panel";
 import { ReleaseNotice } from "@/features/releases/components/release-notice";
+import { WorkspaceSwitcher } from "@/features/workspaces/components/workspace-switcher";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useMobileNavigationVisibility } from "@/hooks/useMobileNavigationVisibility";
 import { authClient } from "@/lib/auth-client";
@@ -70,12 +71,15 @@ export function Navbar() {
     <>
       <header className="app-navbar fixed inset-x-0 top-0 z-50 border-b border-border/50 bg-background/95 text-foreground backdrop-blur-md">
         <div className="project-container grid h-16 grid-cols-[1fr_auto] items-center gap-3 px-[clamp(1rem,3vw,2.5rem)] xl:grid-cols-[1fr_auto_1fr]">
-          <Link
-            className="flex justify-self-start items-center gap-2 text-foreground"
-            to="/dashboard"
-          >
-            <OpenMonetisLogo className="max-md:[&>img:first-child]:h-10" compactOnMobile />
-          </Link>
+          <div className="flex justify-self-start items-center gap-3">
+            <Link
+              className="flex items-center gap-2 text-foreground"
+              to="/dashboard"
+            >
+              <OpenMonetisLogo className="max-md:[&>img:first-child]:h-10" compactOnMobile />
+            </Link>
+            <WorkspaceSwitcher />
+          </div>
 
           <DesktopNavigation
             location={location}

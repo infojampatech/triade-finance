@@ -7,7 +7,7 @@ import {
 import { validateTransactionsSearch } from "@/features/transactions/transactions.presentation";
 
 export const Route = createFileRoute("/categories_/$categoryId")({
-  head: () => ({ meta: [{ title: "Detalhe da categoria · OpenMonetis" }] }),
+  head: () => ({ meta: [{ title: "Detalhe da categoria · Tríade Finance" }] }),
   component: CategoryTransactionsRoute,
   validateSearch: validateCategoryTransactionsSearch,
 });

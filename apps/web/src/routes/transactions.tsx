@@ -6,7 +6,7 @@ import { TransactionsContainer } from "@/features/transactions/components/transa
 import { validateTransactionsSearch } from "@/features/transactions/transactions.presentation";
 
 export const Route = createFileRoute("/transactions")({
-  head: () => ({ meta: [{ title: "Lançamentos · OpenMonetis" }] }),
+  head: () => ({ meta: [{ title: "Lançamentos · Tríade Finance" }] }),
   component: TransactionsRoute,
   validateSearch: validateTransactionsSearch,
 });

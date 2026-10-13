@@ -139,6 +139,7 @@ function transactionFixture(
   return {
     id: transactionId,
     userId,
+    workspaceId: null,
     personId: firstPersonId,
     type: "expense",
     origin: "regular",

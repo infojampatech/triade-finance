@@ -6,7 +6,7 @@ import {
 } from "@/features/transactions/transactions.presentation";
 
 export const Route = createFileRoute("/accounts_/$accountId")({
-  head: () => ({ meta: [{ title: "Extrato da conta · OpenMonetis" }] }),
+  head: () => ({ meta: [{ title: "Extrato da conta · Tríade Finance" }] }),
   component: AccountStatementRoute,
   validateSearch: validateAccountStatementSearch,
 });

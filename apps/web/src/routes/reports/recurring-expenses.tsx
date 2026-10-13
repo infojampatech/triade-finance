@@ -6,7 +6,7 @@ import {
 } from "@/features/recurring-expenses/recurring-expenses.presentation";
 
 export const Route = createFileRoute("/reports/recurring-expenses")({
-  head: () => ({ meta: [{ title: "Recorrências · OpenMonetis" }] }),
+  head: () => ({ meta: [{ title: "Recorrências · Tríade Finance" }] }),
   component: RecurringExpensesReportRoute,
   validateSearch: validateRecurringExpensesReportSearch,
 });

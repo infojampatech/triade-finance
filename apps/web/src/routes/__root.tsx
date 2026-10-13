@@ -101,7 +101,7 @@ export const Route = createRootRoute({
       <div className="grid gap-3 text-center">
         <p className="text-muted-foreground text-sm font-medium">404</p>
         <h1 className="text-2xl font-semibold">Página não encontrada</h1>
-        <p className="text-muted-foreground">O endereço acessado não existe no OpenMonetis.</p>
+        <p className="text-muted-foreground">O endereço acessado não existe no Tríade Finance.</p>
         <Button asChild>
           <Link to="/dashboard">Ir para a visão geral</Link>
         </Button>

@@ -78,6 +78,13 @@
       "when": 1791065993332,
       "tag": "0010_card_closing_day_purchases",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1791908388874,
+      "tag": "0011_smart_peter_parker",
+      "breakpoints": true
     }
   ]
 }

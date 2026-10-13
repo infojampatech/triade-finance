@@ -44,6 +44,7 @@ import { recurringExpensesRepository } from "./repositories/recurring-expenses.r
 import { applicationVersion, releasesRepository } from "./repositories/releases.repository";
 import { settingsRepository } from "./repositories/settings.repository";
 import * as transactionsRepository from "./repositories/transactions.repository";
+import { workspacesRepository } from "./repositories/workspaces.repository";
 import { createAccountsRoute } from "./routes/accounts";
 import { createAttachmentsRoute } from "./routes/attachments";
 import { createBillsRoute } from "./routes/bills";
@@ -70,6 +71,7 @@ import { createRecurringExpensesRoute } from "./routes/recurring-expenses";
 import { createReleasesRoute } from "./routes/releases";
 import { createSettingsRoute } from "./routes/settings";
 import { createTransactionsRoute } from "./routes/transactions";
+import { createWorkspacesRoute } from "./routes/workspaces";
 import { createAccountsService } from "./services/accounts.service";
 import { createAttachmentsService } from "./services/attachments.service";
 import { createBillsService } from "./services/bills.service";
@@ -99,6 +101,7 @@ import { createRecurringExpensesService } from "./services/recurring-expenses.se
 import { createReleasesService } from "./services/releases.service";
 import { createSettingsService } from "./services/settings.service";
 import { createTransactionsService } from "./services/transactions.service";
+import { createWorkspacesService } from "./services/workspaces.service";
 import type { ApiVariables } from "./types/context";
 import { assertProductionSecret, getRequiredProductionEnv, parseCsvEnv } from "./utils/env";
 import { logoDevGateway } from "./utils/logo-dev";
@@ -204,6 +207,8 @@ const settingsRoute = createSettingsRoute(
 );
 const preferencesService = createPreferencesService(preferencesRepository);
 const preferencesRoute = createPreferencesRoute(preferencesService);
+const workspacesService = createWorkspacesService(workspacesRepository);
+const workspacesRoute = createWorkspacesRoute(workspacesService);
 const deviceTokenSecret =
   assertProductionSecret("DEVICE_TOKEN_SECRET", ["development-device-token-secret-change-me"]) ??
   "development-device-token-secret-change-me";
@@ -254,6 +259,10 @@ app.use(
 );
 
 app.use("/api/auth/*", privateCache);
+app.use("/workspaces", privateCache);
+app.use("/workspaces/*", privateCache);
+app.use("/workspaces", requireAuth);
+app.use("/workspaces/*", requireAuth);
 app.use("/accounts", privateCache);
 app.use("/accounts/*", privateCache);
 app.use("/accounts", requireAuth);
@@ -489,6 +498,7 @@ app.use("/api/auth/*", async (context, next) => {
 });
 
 app.route("/api/auth/device", companionDeviceRoute);
+app.route("/workspaces", workspacesRoute);
 app.route("/accounts", accountsRoute);
 app.route("/cards", cardsRoute);
 app.route("/budgets", budgetsRoute);

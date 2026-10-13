@@ -1,1 +1,1 @@
-export const siteName = "OpenMonetis";
+export const siteName = "Tríade Finance";

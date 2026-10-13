@@ -29,7 +29,8 @@
     "./external-expenses": "./src/external-expenses.ts",
     "./inbox": "./src/inbox.ts",
     "./inbox-rules": "./src/inbox-rules.ts",
-    "./device-tokens": "./src/device-tokens.ts"
+    "./device-tokens": "./src/device-tokens.ts",
+    "./workspaces": "./src/workspaces.ts"
   },
   "scripts": {
     "build": "tsc --noEmit",

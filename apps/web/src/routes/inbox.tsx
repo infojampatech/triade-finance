@@ -6,7 +6,7 @@ import { Navbar } from "@/components/navigation/navbar";
 import { InboxPage } from "@/features/inbox/components/inbox-page";
 
 export const Route = createFileRoute("/inbox")({
-  head: () => ({ meta: [{ title: "Caixa de entrada · OpenMonetis" }] }),
+  head: () => ({ meta: [{ title: "Caixa de entrada · Tríade Finance" }] }),
   component: InboxRoute,
   validateSearch: (search: Record<string, unknown>) => ({
     status: ["pending", "processed", "discarded"].includes(String(search.status))

@@ -32,7 +32,7 @@ export const Route = createFileRoute("/dashboard")({
       });
     }
   },
-  head: () => ({ meta: [{ title: "Visão geral · OpenMonetis" }] }),
+  head: () => ({ meta: [{ title: "Visão geral · Tríade Finance" }] }),
   component: DashboardRoute,
   validateSearch: validateDashboardSearch,
 });

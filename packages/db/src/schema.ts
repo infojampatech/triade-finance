@@ -27,6 +27,12 @@ export const accountType = pgEnum("account_type", [
   "other",
 ]);
 
+export const workspaceType = pgEnum("workspace_type", [
+  "personal",
+  "family",
+  "business",
+]);
+
 export const applicationTheme = pgEnum("application_theme", ["system", "light", "dark"]);
 
 export const mobileShortcutDestination = pgEnum("mobile_shortcut_destination", [
@@ -150,6 +156,28 @@ export const user = pgTable(
   (table) => [
     uniqueIndex("user_email_lower_unique").on(sql`lower(${table.email})`),
     check("user_name_not_blank_check", sql`btrim(${table.name}) <> ''`),
+  ],
+);
+
+export const workspaces = pgTable(
+  "workspaces",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    name: varchar("name", { length: 120 }).notNull(),
+    type: workspaceType("type").notNull().default("personal"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at")
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [
+    index("workspaces_user_id_idx").on(table.userId),
+    uniqueIndex("workspaces_id_user_id_unique").on(table.id, table.userId),
+    check("workspaces_name_not_blank_check", sql`btrim(${table.name}) <> ''`),
   ],
 );
 
@@ -442,6 +470,7 @@ export const financialAccounts = pgTable(
     userId: uuid("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
+    workspaceId: uuid("workspace_id").references(() => workspaces.id, { onDelete: "set null" }),
     name: varchar("name", { length: 120 }).notNull(),
     type: accountType("type").notNull(),
     logo: varchar("logo", { length: 255 }),
@@ -567,6 +596,7 @@ export const categories = pgTable(
     userId: uuid("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
+    workspaceId: uuid("workspace_id").references(() => workspaces.id, { onDelete: "set null" }),
     name: varchar("name", { length: 120 }).notNull(),
     type: categoryType("type").notNull(),
     icon: varchar("icon", { length: 100 }),
@@ -752,6 +782,7 @@ export const transactions = pgTable(
     userId: uuid("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
+    workspaceId: uuid("workspace_id").references(() => workspaces.id, { onDelete: "set null" }),
     personId: uuid("person_id")
       .notNull()
       .references(() => people.id, { onDelete: "restrict" }),
@@ -1717,6 +1748,7 @@ export const budgets = pgTable(
     userId: uuid("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
+    workspaceId: uuid("workspace_id").references(() => workspaces.id, { onDelete: "set null" }),
     categoryId: uuid("category_id")
       .notNull()
       .references(() => categories.id, { onDelete: "cascade", onUpdate: "cascade" }),
@@ -1865,6 +1897,7 @@ export const userRelations = relations(user, ({ many, one }) => ({
   authAccounts: many(account),
   passkeys: many(passkey),
   people: many(people),
+  workspaces: many(workspaces),
   financialAccounts: many(financialAccounts),
   cards: many(cards),
   categories: many(categories),
@@ -1885,6 +1918,17 @@ export const userRelations = relations(user, ({ many, one }) => ({
   inboxRules: many(inboxRules),
   dashboardPreferences: one(dashboardPreferences),
   preferences: one(userPreferences),
+}));
+
+export const workspacesRelations = relations(workspaces, ({ one, many }) => ({
+  user: one(user, {
+    fields: [workspaces.userId],
+    references: [user.id],
+  }),
+  financialAccounts: many(financialAccounts),
+  categories: many(categories),
+  transactions: many(transactions),
+  budgets: many(budgets),
 }));
 
 export const dashboardPreferencesRelations = relations(dashboardPreferences, ({ one }) => ({
