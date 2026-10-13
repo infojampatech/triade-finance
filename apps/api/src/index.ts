@@ -65,6 +65,7 @@ import { createNotesRoute } from "./routes/notes";
 import { createNotificationsRoute } from "./routes/notifications";
 import { createPeopleRoute } from "./routes/people";
 import { createPersonConnectionsRoute } from "./routes/person-connections";
+import { createPierreRoute } from "./routes/pierre";
 import { createPersonSettlementsRoute } from "./routes/person-settlements";
 import { createPreferencesRoute } from "./routes/preferences";
 import { createRecurringExpensesRoute } from "./routes/recurring-expenses";
@@ -95,6 +96,7 @@ import { createNotesService } from "./services/notes.service";
 import { createNotificationsService } from "./services/notifications.service";
 import { createPeopleService } from "./services/people.service";
 import { createPersonConnectionsService } from "./services/person-connections.service";
+import { createPierreService } from "./services/pierre.service";
 import { createPersonSettlementsService } from "./services/person-settlements.service";
 import { createPreferencesService } from "./services/preferences.service";
 import { createRecurringExpensesService } from "./services/recurring-expenses.service";
@@ -224,6 +226,7 @@ const inboxService = createInboxService(inboxRepository, {
 const inboxRoute = createInboxRoute(inboxService);
 const inboxRulesRoute = createInboxRulesRoute(createInboxRulesService(inboxRulesRepository));
 const companionInboxRoute = createCompanionInboxRoute(inboxService);
+const pierreRoute = createPierreRoute(createPierreService(inboxService));
 const notificationsRoute = createNotificationsRoute(
   createNotificationsService(
     notificationsRepository,
@@ -453,6 +456,24 @@ app.use(
       context.json({ valid: false as const, error: "Muitas solicitações" }, 429),
   }),
 );
+app.use("/integrations/pierre/*", privateCache);
+app.use(
+  "/integrations/pierre/*",
+  bodyLimit({
+    maxSize: 256 * 1024,
+    onError: (context) =>
+      context.json({ error: true, message: "Request body is too large", code: "payload_too_large" }, 413),
+  }),
+);
+app.use("/integrations/pierre/*", requireDeviceToken);
+app.use(
+  "/integrations/pierre/*",
+  createMutationRateLimit({
+    windowMs: 60_000,
+    max: 20,
+    key: (context) => `pierre:${context.get("deviceTokenId")}`,
+  }),
+);
 app.use("/api/inbox", requireDeviceToken);
 app.use("/api/inbox/*", requireDeviceToken);
 app.use(
@@ -526,6 +547,7 @@ app.route("/inbox-rules", inboxRulesRoute);
 app.route("/notifications", notificationsRoute);
 app.route("/releases", releasesRoute);
 app.route("/api/inbox", companionInboxRoute);
+app.route("/integrations/pierre", pierreRoute);
 
 app.openapi(
   {

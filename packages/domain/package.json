@@ -30,7 +30,8 @@
     "./inbox": "./src/inbox.ts",
     "./inbox-rules": "./src/inbox-rules.ts",
     "./device-tokens": "./src/device-tokens.ts",
-    "./workspaces": "./src/workspaces.ts"
+    "./workspaces": "./src/workspaces.ts",
+    "./pierre": "./src/pierre.ts"
   },
   "scripts": {
     "build": "tsc --noEmit",
