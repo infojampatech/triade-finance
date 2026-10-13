@@ -1,0 +1,31 @@
+name: Sincronização Automática Pierre Finance
+
+on:
+  schedule:
+    # A cada 4 horas: 00:00, 04:00, 08:00, 12:00, 16:00, 20:00 UTC
+    - cron: "0 */4 * * *"
+  workflow_dispatch:
+
+jobs:
+  sync:
+    name: Sync Pierre Bank Entries
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout do Repositório
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Executar Sincronização Pierre $\rightarrow$ Tríade
+        env:
+          TRIADE_URL: ${{ secrets.TRIADE_URL }}
+          PIERRE_INTEGRATION_TOKEN: ${{ secrets.PIERRE_INTEGRATION_TOKEN }}
+          PIERRE_API_URL: ${{ secrets.PIERRE_API_URL }}
+          PIERRE_API_KEY: ${{ secrets.PIERRE_API_KEY }}
+        run: |
+          node scripts/sync-pierre.mjs

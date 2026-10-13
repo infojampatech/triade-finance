@@ -19,6 +19,7 @@
     "db:generate": "pnpm --filter @openmonetis/db db:generate",
     "db:migrations:check": "node scripts/validate-migrations.mjs",
     "db:migrate": "pnpm --filter @openmonetis/db db:migrate",
+    "db:supabase:check": "node scripts/supabase-check.mjs",
     "db:seed": "pnpm --filter @openmonetis/api db:seed",
     "db:studio": "pnpm --filter @openmonetis/db db:studio",
     "dev": "pnpm --parallel --filter @openmonetis/api --filter @openmonetis/web dev",

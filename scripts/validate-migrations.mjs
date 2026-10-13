@@ -42,8 +42,8 @@ if (baselineEntry.tag !== baseline.tag || baselineEntry.when !== baseline.when) 
   );
 }
 
-const baselineContents = readFileSync(`${migrationsDirectory}/${baseline.tag}.sql`);
-const baselineHash = createHash("sha256").update(baselineContents).digest("hex");
+const baselineContents = readFileSync(`${migrationsDirectory}/${baseline.tag}.sql`, "utf8").replace(/\r\n/g, "\n");
+const baselineHash = createHash("sha256").update(baselineContents, "utf8").digest("hex");
 if (baselineHash !== baseline.sha256) {
   fail(`A migration publicada ${baseline.tag} foi alterada; crie uma nova migration incremental.`);
 }
