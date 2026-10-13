@@ -16,6 +16,10 @@ export function getProcessDefaults(
   const sourceMatch = getInboxSourceMatch(item.sourceAppName, accounts, cards);
   const matchedCardId = sourceMatch?.kind === "card" ? sourceMatch.id : undefined;
   const matchedAccountId = sourceMatch?.kind === "account" ? sourceMatch.id : undefined;
+  const suggestedAccountId =
+    suggestion?.accountId && accounts.some((a) => a.id === suggestion.accountId && !a.isArchived)
+      ? suggestion.accountId
+      : undefined;
   const fallbackAccountId = accounts.find((candidate) => !candidate.isArchived)?.id;
 
   return {
@@ -24,7 +28,7 @@ export function getProcessDefaults(
     purchaseDate: getInboxPurchaseDate(item.notificationTimestamp),
     paymentMethod: matchedCardId ? "credit_card" : "pix",
     cardId: matchedCardId,
-    accountId: matchedCardId ? undefined : (matchedAccountId ?? fallbackAccountId),
+    accountId: matchedCardId ? undefined : (suggestedAccountId ?? matchedAccountId ?? fallbackAccountId),
     categoryId: suggestion?.categoryId ?? undefined,
     personId: suggestion?.personId ?? undefined,
   };

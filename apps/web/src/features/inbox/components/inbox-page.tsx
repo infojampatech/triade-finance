@@ -21,6 +21,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { accountsQueryOptions } from "@/features/accounts/accounts.queries";
 import { cardsQueryOptions } from "@/features/cards/cards.queries";
 import { categoriesQueryOptions } from "@/features/categories/categories.queries";
+import { workspacesQueryOptions } from "@/features/workspaces/workspaces.queries";
 import { InboxRulesDialog } from "@/features/inbox-rules/components/inbox-rules-dialog";
 import { describeInboxRuleSuggestion } from "@/features/inbox-rules/inbox-rules.presentation";
 import {
@@ -83,6 +84,7 @@ export function InboxPage({
   const cardsQuery = useQuery(cardsQueryOptions());
   const categoriesQuery = useQuery(categoriesQueryOptions());
   const peopleQuery = useQuery(peopleQueryOptions());
+  const workspacesQuery = useQuery(workspacesQueryOptions());
   const discardMutation = useDiscardInboxItemMutation();
   const restoreMutation = useRestoreInboxItemMutation();
   const confirmMutation = useConfirmInboxItemMutation();
@@ -372,10 +374,12 @@ export function InboxPage({
       ) : null}
 
       <InboxRulesDialog
+        accounts={accountsQuery.data ?? []}
         categories={categoriesQuery.data ?? []}
         onOpenChange={setRulesOpen}
         open={rulesOpen}
         people={peopleQuery.data ?? []}
+        workspaces={workspacesQuery.data ?? []}
       />
 
       <InboxDeleteDialog

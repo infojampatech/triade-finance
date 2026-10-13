@@ -1,4 +1,12 @@
-import { categories, db, inboxItems, inboxRules, people } from "@openmonetis/db";
+import {
+  categories,
+  db,
+  financialAccounts,
+  inboxItems,
+  inboxRules,
+  people,
+  workspaces,
+} from "@openmonetis/db";
 import type { InboxRuleCondition } from "@openmonetis/domain/inbox-rules";
 import { and, asc, eq, sql } from "drizzle-orm";
 import type { InboxRuleRecord, InboxRulesRepository } from "../services/inbox-rules.service";
@@ -17,6 +25,10 @@ const ruleSelection = {
   personId: inboxRules.personId,
   personName: people.name,
   personStatus: people.status,
+  workspaceId: inboxRules.workspaceId,
+  workspaceName: workspaces.name,
+  accountId: inboxRules.accountId,
+  accountName: financialAccounts.name,
   version: inboxRules.version,
   createdAt: inboxRules.createdAt,
   updatedAt: inboxRules.updatedAt,
@@ -36,6 +48,10 @@ type RuleSelectionRow = {
   personId: string | null;
   personName: string | null;
   personStatus: "active" | "inactive" | null;
+  workspaceId: string | null;
+  workspaceName: string | null;
+  accountId: string | null;
+  accountName: string | null;
   version: number;
   createdAt: Date;
   updatedAt: Date;
@@ -155,6 +171,28 @@ export const inboxRulesRepository = {
     return person ?? null;
   },
 
+  async findWorkspaceForUser(id, userId) {
+    const [workspace] = await db
+      .select({ id: workspaces.id, name: workspaces.name })
+      .from(workspaces)
+      .where(and(eq(workspaces.id, id), eq(workspaces.userId, userId)))
+      .limit(1);
+    return workspace ?? null;
+  },
+
+  async findAccountForUser(id, userId) {
+    const [account] = await db
+      .select({
+        id: financialAccounts.id,
+        name: financialAccounts.name,
+        isArchived: financialAccounts.isArchived,
+      })
+      .from(financialAccounts)
+      .where(and(eq(financialAccounts.id, id), eq(financialAccounts.userId, userId)))
+      .limit(1);
+    return account ?? null;
+  },
+
   async findInboxItemForUser(id, userId) {
     const [item] = await db
       .select({
@@ -189,6 +227,17 @@ function selectRules() {
     .leftJoin(
       people,
       and(eq(people.id, inboxRules.personId), eq(people.userId, inboxRules.userId)),
+    )
+    .leftJoin(
+      workspaces,
+      and(eq(workspaces.id, inboxRules.workspaceId), eq(workspaces.userId, inboxRules.userId)),
+    )
+    .leftJoin(
+      financialAccounts,
+      and(
+        eq(financialAccounts.id, inboxRules.accountId),
+        eq(financialAccounts.userId, inboxRules.userId),
+      ),
     );
 }
 

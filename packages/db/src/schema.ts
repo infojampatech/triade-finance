@@ -1057,6 +1057,8 @@ export const inboxRules = pgTable(
     conditions: jsonb("conditions").notNull(),
     categoryId: uuid("category_id"),
     personId: uuid("person_id"),
+    workspaceId: uuid("workspace_id"),
+    accountId: uuid("account_id"),
     version: integer("version").notNull().default(1),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true })
@@ -1082,12 +1084,22 @@ export const inboxRules = pgTable(
       columns: [table.personId, table.userId],
       foreignColumns: [people.id, people.userId],
     }).onDelete("cascade"),
+    foreignKey({
+      name: "inbox_rules_workspace_user_fk",
+      columns: [table.workspaceId, table.userId],
+      foreignColumns: [workspaces.id, workspaces.userId],
+    }).onDelete("cascade"),
+    foreignKey({
+      name: "inbox_rules_account_user_fk",
+      columns: [table.accountId, table.userId],
+      foreignColumns: [financialAccounts.id, financialAccounts.userId],
+    }).onDelete("cascade"),
     check("inbox_rules_name_not_blank_check", sql`btrim(${table.name}) <> ''`),
     check("inbox_rules_priority_range_check", sql`${table.priority} between 0 and 9999`),
     check("inbox_rules_version_positive_check", sql`${table.version} > 0`),
     check(
       "inbox_rules_actions_required_check",
-      sql`${table.categoryId} is not null or ${table.personId} is not null`,
+      sql`${table.categoryId} is not null or ${table.personId} is not null or ${table.workspaceId} is not null or ${table.accountId} is not null`,
     ),
     check(
       "inbox_rules_conditions_array_check",

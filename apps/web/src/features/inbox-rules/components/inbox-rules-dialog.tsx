@@ -1,3 +1,4 @@
+import type { AccountOutput } from "@openmonetis/validators/accounts";
 import type { CategoryOutput } from "@openmonetis/validators/categories";
 import type {
   CreateInboxRuleInput,
@@ -5,10 +6,13 @@ import type {
   ReplaceInboxRuleInput,
 } from "@openmonetis/validators/inbox-rules";
 import type { PersonOutput } from "@openmonetis/validators/people";
+import type { WorkspaceOutput } from "@openmonetis/validators/workspaces";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Pencil, Plus, RefreshCw, Trash2, Workflow } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { accountsQueryOptions } from "@/features/accounts/accounts.queries";
+import { workspacesQueryOptions } from "@/features/workspaces/workspaces.queries";
 import { MobileFormContent as DialogContent } from "@/components/forms/mobile-form-content";
 import { MobileFormDialog as Dialog } from "@/components/forms/mobile-form-dialog";
 import { Button } from "@/components/ui/button";
@@ -34,15 +38,21 @@ export function InboxRulesDialog({
   onOpenChange,
   open,
   people,
+  workspaces,
+  accounts,
 }: {
   categories: CategoryOutput[];
   onOpenChange: (open: boolean) => void;
   open: boolean;
   people: PersonOutput[];
+  workspaces?: WorkspaceOutput[];
+  accounts?: AccountOutput[];
 }) {
   const [view, setView] = useState<View>({ kind: "list" });
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const query = useQuery({ ...inboxRulesQueryOptions(), enabled: open });
+  const accountsQuery = useQuery({ ...accountsQueryOptions(), enabled: open && !accounts });
+  const workspacesQuery = useQuery({ ...workspacesQueryOptions(), enabled: open && !workspaces });
   const createMutation = useCreateInboxRuleMutation();
   const replaceMutation = useReplaceInboxRuleMutation();
   const activeMutation = useSetInboxRuleActiveMutation();
@@ -139,12 +149,14 @@ export function InboxRulesDialog({
         <div data-mobile-form-body className="min-h-0 flex-1 overflow-y-auto pr-1">
           {view.kind === "form" ? (
             <InboxRuleForm
+              accounts={accounts ?? accountsQuery.data ?? []}
               categories={categories}
               key={view.rule?.id ?? "new-rule"}
               onCancel={closeOrGoBack}
               onSubmit={save}
               people={people}
               rule={view.rule}
+              workspaces={workspaces ?? workspacesQuery.data ?? []}
             />
           ) : (
             <div className="grid gap-4">

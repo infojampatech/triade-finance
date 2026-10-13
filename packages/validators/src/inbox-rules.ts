@@ -45,13 +45,22 @@ const InboxRuleEditableFieldsSchema = z
     isActive: z.boolean(),
     matchMode: z.enum(inboxRuleMatchModes),
     conditions: z.array(InboxRuleConditionSchema).min(1).max(inboxRuleMaximumConditions),
-    categoryId: z.uuid().nullable(),
-    personId: z.uuid().nullable(),
+    categoryId: z.uuid().nullable().default(null),
+    personId: z.uuid().nullable().default(null),
+    workspaceId: z.uuid().nullable().default(null),
+    accountId: z.uuid().nullable().default(null),
   })
   .strict()
-  .refine((input) => input.categoryId !== null || input.personId !== null, {
-    message: "At least one action is required",
-  });
+  .refine(
+    (input) =>
+      input.categoryId !== null ||
+      input.personId !== null ||
+      input.workspaceId !== null ||
+      input.accountId !== null,
+    {
+      message: "At least one action is required",
+    },
+  );
 
 export const CreateInboxRuleInputSchema =
   InboxRuleEditableFieldsSchema.openapi("CreateInboxRuleInput");
@@ -94,6 +103,8 @@ export const InboxRuleOutputSchema = z
     conditions: z.array(InboxRuleConditionSchema),
     category: InboxRuleTargetOutputSchema.nullable(),
     person: InboxRuleTargetOutputSchema.nullable(),
+    workspace: InboxRuleTargetOutputSchema.nullable(),
+    account: InboxRuleTargetOutputSchema.nullable(),
     version: z.number().int().positive(),
     createdAt: z.iso.datetime(),
     updatedAt: z.iso.datetime(),
@@ -111,11 +122,13 @@ export const InboxRuleSuggestionOutputSchema = z
   .object({
     categoryId: z.uuid().nullable(),
     personId: z.uuid().nullable(),
+    workspaceId: z.uuid().nullable(),
+    accountId: z.uuid().nullable(),
     appliedRules: z.array(
       z.object({
         id: z.uuid(),
         name: z.string(),
-        fields: z.array(z.enum(["categoryId", "personId"])).min(1),
+        fields: z.array(z.enum(["categoryId", "personId", "workspaceId", "accountId"])).min(1),
       }),
     ),
   })

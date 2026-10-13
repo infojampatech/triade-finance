@@ -5,6 +5,7 @@ import {
   inboxRuleNumericConditionOperators,
   inboxRuleTextConditionOperators,
 } from "@openmonetis/domain/inbox-rules";
+import type { AccountOutput } from "@openmonetis/validators/accounts";
 import type { CategoryOutput } from "@openmonetis/validators/categories";
 import {
   type CreateInboxRuleInput,
@@ -14,8 +15,9 @@ import {
   ReplaceInboxRuleInputSchema,
 } from "@openmonetis/validators/inbox-rules";
 import type { PersonOutput } from "@openmonetis/validators/people";
+import type { WorkspaceOutput } from "@openmonetis/validators/workspaces";
 import { useForm } from "@tanstack/react-form";
-import { CircleOff, Plus, Trash2 } from "lucide-react";
+import { Briefcase, CircleOff, Home, Landmark, Plus, Trash2, User } from "lucide-react";
 import { useId, useState } from "react";
 import { toast } from "sonner";
 import { MobileFormState } from "@/components/forms/mobile-form-state";
@@ -45,12 +47,16 @@ type EditableCondition = {
 export function InboxRuleForm({
   categories,
   people,
+  workspaces = [],
+  accounts = [],
   rule,
   onCancel,
   onSubmit,
 }: {
   categories: CategoryOutput[];
   people: PersonOutput[];
+  workspaces?: WorkspaceOutput[];
+  accounts?: AccountOutput[];
   rule: InboxRuleOutput | null;
   onCancel: () => void;
   onSubmit: (input: CreateInboxRuleInput | ReplaceInboxRuleInput) => Promise<void>;
@@ -71,6 +77,8 @@ export function InboxRuleForm({
       })) ?? [createEmptyCondition()]) as EditableCondition[],
       categoryId: rule?.category?.id ?? "none",
       personId: rule?.person?.id ?? "none",
+      workspaceId: rule?.workspace?.id ?? "none",
+      accountId: rule?.account?.id ?? "none",
     },
     onSubmitInvalid: showInvalidFormToast,
     onSubmit: async ({ value }) => {
@@ -95,6 +103,8 @@ export function InboxRuleForm({
         ),
         categoryId: value.categoryId === "none" ? null : value.categoryId,
         personId: value.personId === "none" ? null : value.personId,
+        workspaceId: value.workspaceId === "none" ? null : value.workspaceId,
+        accountId: value.accountId === "none" ? null : value.accountId,
         ...(rule ? { expectedVersion: rule.version } : {}),
       };
       const parsed = (rule ? ReplaceInboxRuleInputSchema : CreateInboxRuleInputSchema).safeParse(
@@ -306,6 +316,66 @@ export function InboxRuleForm({
       <fieldset className="grid gap-3">
         <legend className="font-medium text-sm tracking-tight">Preencher</legend>
         <div className="grid gap-4 sm:grid-cols-2">
+          <form.Field name="workspaceId">
+            {(field) => (
+              <div className="grid gap-1.5">
+                <Label htmlFor={`${id}-workspace`}>Workspace de destino</Label>
+                <Select
+                  onValueChange={(value) => value && field.handleChange(value)}
+                  value={field.state.value}
+                >
+                  <SelectTrigger className="w-full" id={`${id}-workspace`}>
+                    <SelectValue>
+                      <WorkspaceOption
+                        workspace={workspaces.find((ws) => ws.id === field.state.value)}
+                      />
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">
+                      <WorkspaceOption />
+                    </SelectItem>
+                    {workspaces.map((ws) => (
+                      <SelectItem key={ws.id} value={ws.id}>
+                        <WorkspaceOption workspace={ws} />
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </form.Field>
+          <form.Field name="accountId">
+            {(field) => (
+              <div className="grid gap-1.5">
+                <Label htmlFor={`${id}-account`}>Conta financeira</Label>
+                <Select
+                  onValueChange={(value) => value && field.handleChange(value)}
+                  value={field.state.value}
+                >
+                  <SelectTrigger className="w-full" id={`${id}-account`}>
+                    <SelectValue>
+                      <AccountOption
+                        account={accounts.find((acc) => acc.id === field.state.value)}
+                      />
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">
+                      <AccountOption />
+                    </SelectItem>
+                    {accounts
+                      .filter((acc) => !acc.isArchived)
+                      .map((acc) => (
+                        <SelectItem key={acc.id} value={acc.id}>
+                          <AccountOption account={acc} />
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </form.Field>
           <form.Field name="categoryId">
             {(field) => (
               <div className="grid gap-1.5">
@@ -448,6 +518,34 @@ function CategoryOption({ category }: { category?: CategoryOutput }) {
         )}
       </span>
       <span className="truncate">{category?.name ?? "Não preencher"}</span>
+    </span>
+  );
+}
+
+function WorkspaceOption({ workspace }: { workspace?: WorkspaceOutput }) {
+  const Icon =
+    workspace?.type === "business"
+      ? Briefcase
+      : workspace?.type === "family"
+        ? Home
+        : User;
+  return (
+    <span className="flex min-w-0 items-center gap-2">
+      <span className="grid size-6 shrink-0 place-items-center rounded-full bg-muted text-muted-foreground">
+        {workspace ? <Icon className="size-3.5" /> : <CircleOff aria-hidden="true" className="size-3.5" />}
+      </span>
+      <span className="truncate">{workspace?.name ?? "Não direcionar"}</span>
+    </span>
+  );
+}
+
+function AccountOption({ account }: { account?: AccountOutput }) {
+  return (
+    <span className="flex min-w-0 items-center gap-2">
+      <span className="grid size-6 shrink-0 place-items-center rounded-full bg-muted text-muted-foreground">
+        {account ? <Landmark className="size-3.5" /> : <CircleOff aria-hidden="true" className="size-3.5" />}
+      </span>
+      <span className="truncate">{account?.name ?? "Não preencher"}</span>
     </span>
   );
 }

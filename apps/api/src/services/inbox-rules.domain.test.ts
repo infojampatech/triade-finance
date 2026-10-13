@@ -21,6 +21,8 @@ function rule(overrides: Partial<InboxRuleCandidate>): InboxRuleCandidate {
     conditions: [{ field: "originalText", operator: "contains", value: "ifood" }],
     categoryId: null,
     personId: null,
+    workspaceId: null,
+    accountId: null,
     ...overrides,
   };
 }

@@ -43,11 +43,13 @@ export function formatInboxRuleCondition(condition: InboxRuleCondition) {
 
 export function describeInboxRuleActions(rule: InboxRuleOutput) {
   return [
+    rule.workspace ? `workspace ${rule.workspace.name}` : null,
+    rule.account ? `conta ${rule.account.name}` : null,
     rule.category ? `categoria ${rule.category.name}` : null,
     rule.person ? `pessoa ${rule.person.name}` : null,
   ]
     .filter(Boolean)
-    .join(" e ");
+    .join(" · ");
 }
 
 export function describeInboxRuleSuggestion(suggestion: InboxRuleSuggestionOutput | null) {

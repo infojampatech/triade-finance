@@ -30,6 +30,10 @@ export type InboxRuleRecord = {
   personId: string | null;
   personName: string | null;
   personStatus: "active" | "inactive" | null;
+  workspaceId: string | null;
+  workspaceName: string | null;
+  accountId: string | null;
+  accountName: string | null;
   version: number;
   createdAt: Date;
   updatedAt: Date;
@@ -42,6 +46,8 @@ type InboxRuleWriteRecord = Omit<
   | "categoryType"
   | "personName"
   | "personStatus"
+  | "workspaceName"
+  | "accountName"
   | "version"
   | "createdAt"
   | "updatedAt"
@@ -81,6 +87,14 @@ export type InboxRulesRepository = {
     id: string,
     userId: string,
   ): Promise<{ id: string; status: "active" | "inactive" } | null>;
+  findWorkspaceForUser(
+    id: string,
+    userId: string,
+  ): Promise<{ id: string; name: string } | null>;
+  findAccountForUser(
+    id: string,
+    userId: string,
+  ): Promise<{ id: string; name: string; isArchived: boolean } | null>;
   findInboxItemForUser(
     id: string,
     userId: string,
@@ -95,7 +109,7 @@ export function createInboxRulesService(repository: InboxRulesRepository) {
     },
 
     async create(input: CreateInboxRuleInput, userId: string) {
-      await assertTargetsAvailable(input.categoryId, input.personId, userId, repository);
+      await assertTargetsAvailable(input, userId, repository);
       const draft = buildDraft(input, userId);
       const record = await repository.insert(draft);
       if (!record) {
@@ -106,7 +120,7 @@ export function createInboxRulesService(repository: InboxRulesRepository) {
 
     async replace(id: string, input: ReplaceInboxRuleInput, userId: string) {
       await findRule(id, userId, repository);
-      await assertTargetsAvailable(input.categoryId, input.personId, userId, repository);
+      await assertTargetsAvailable(input, userId, repository);
       const { userId: _userId, ...draft } = buildDraft(input, userId);
       const result = await repository.replaceForUser(id, userId, input.expectedVersion, draft);
       return mutationOutput(result);
@@ -151,7 +165,9 @@ export function availableInboxRuleCandidates(rules: InboxRuleRecord[]): InboxRul
   return rules.flatMap((rule) => {
     const categoryId = rule.categoryType === "expense" ? rule.categoryId : null;
     const personId = rule.personStatus === "active" ? rule.personId : null;
-    if (!rule.isActive || (!categoryId && !personId)) return [];
+    const workspaceId = rule.workspaceId;
+    const accountId = rule.accountId;
+    if (!rule.isActive || (!categoryId && !personId && !workspaceId && !accountId)) return [];
     return [
       {
         id: rule.id,
@@ -162,6 +178,8 @@ export function availableInboxRuleCandidates(rules: InboxRuleRecord[]): InboxRul
         conditions: rule.conditions,
         categoryId,
         personId,
+        workspaceId,
+        accountId,
       },
     ];
   });
@@ -179,8 +197,10 @@ function buildDraft(
       isActive: input.isActive,
       matchMode: input.matchMode,
       conditions: input.conditions,
-      categoryId: input.categoryId,
-      personId: input.personId,
+      categoryId: input.categoryId ?? null,
+      personId: input.personId ?? null,
+      workspaceId: input.workspaceId ?? null,
+      accountId: input.accountId ?? null,
     });
   } catch (error) {
     if (error instanceof InboxRuleError) throw badRequest(error.message, error.code);
@@ -189,25 +209,43 @@ function buildDraft(
 }
 
 async function assertTargetsAvailable(
-  categoryId: string | null,
-  personId: string | null,
+  input: {
+    categoryId?: string | null;
+    personId?: string | null;
+    workspaceId?: string | null;
+    accountId?: string | null;
+  },
   userId: string,
   repository: InboxRulesRepository,
 ) {
-  const [category, person] = await Promise.all([
-    categoryId ? repository.findCategoryForUser(categoryId, userId) : null,
-    personId ? repository.findPersonForUser(personId, userId) : null,
+  const [category, person, workspace, account] = await Promise.all([
+    input.categoryId ? repository.findCategoryForUser(input.categoryId, userId) : null,
+    input.personId ? repository.findPersonForUser(input.personId, userId) : null,
+    input.workspaceId ? repository.findWorkspaceForUser(input.workspaceId, userId) : null,
+    input.accountId ? repository.findAccountForUser(input.accountId, userId) : null,
   ]);
-  if (categoryId && category?.type !== "expense") {
+  if (input.categoryId && category?.type !== "expense") {
     throw badRequest(
       "Inbox rules can only use an owned expense category",
       "inbox_rule_category_unavailable",
     );
   }
-  if (personId && person?.status !== "active") {
+  if (input.personId && person?.status !== "active") {
     throw badRequest(
       "Inbox rules can only use an owned active person",
       "inbox_rule_person_unavailable",
+    );
+  }
+  if (input.workspaceId && !workspace) {
+    throw badRequest(
+      "Inbox rules can only use an owned workspace",
+      "inbox_rule_workspace_unavailable",
+    );
+  }
+  if (input.accountId && (!account || account.isArchived)) {
+    throw badRequest(
+      "Inbox rules can only use an owned active account",
+      "inbox_rule_account_unavailable",
     );
   }
 }
@@ -253,6 +291,14 @@ function toOutput(record: InboxRuleRecord): InboxRuleOutput {
     person:
       record.personId && record.personName
         ? { id: record.personId, name: record.personName }
+        : null,
+    workspace:
+      record.workspaceId && record.workspaceName
+        ? { id: record.workspaceId, name: record.workspaceName }
+        : null,
+    account:
+      record.accountId && record.accountName
+        ? { id: record.accountId, name: record.accountName }
         : null,
     version: record.version,
     createdAt: record.createdAt.toISOString(),

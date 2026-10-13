@@ -55,6 +55,8 @@ export type InboxRuleDraftInput = {
   conditions: InboxRuleCondition[];
   categoryId: string | null;
   personId: string | null;
+  workspaceId: string | null;
+  accountId: string | null;
 };
 
 export type InboxRuleCandidate = Omit<InboxRuleDraftInput, "userId"> & {
@@ -70,11 +72,13 @@ export type InboxRuleMatchItem = {
   parsedAmount: number | null;
 };
 
-export type InboxRuleAppliedField = "categoryId" | "personId";
+export type InboxRuleAppliedField = "categoryId" | "personId" | "workspaceId" | "accountId";
 
 export type InboxRuleResolution = {
   categoryId: string | null;
   personId: string | null;
+  workspaceId: string | null;
+  accountId: string | null;
   appliedRules: Array<{
     id: string;
     name: string;
@@ -117,7 +121,7 @@ export function createInboxRuleDraft(input: InboxRuleDraftInput): InboxRuleDraft
       "Inbox rule contains too many conditions",
     );
   }
-  if (!input.categoryId && !input.personId) {
+  if (!input.categoryId && !input.personId && !input.workspaceId && !input.accountId) {
     throw new InboxRuleError(
       "inbox_rule_actions_required",
       "Inbox rule must fill at least one field",
@@ -145,6 +149,8 @@ export function resolveInboxRules(
   const resolution: InboxRuleResolution = {
     categoryId: null,
     personId: null,
+    workspaceId: null,
+    accountId: null,
     appliedRules: [],
   };
   const orderedRules = [...rules].sort(
@@ -166,13 +172,119 @@ export function resolveInboxRules(
       resolution.personId = rule.personId;
       fields.push("personId");
     }
+    if (resolution.workspaceId === null && rule.workspaceId) {
+      resolution.workspaceId = rule.workspaceId;
+      fields.push("workspaceId");
+    }
+    if (resolution.accountId === null && rule.accountId) {
+      resolution.accountId = rule.accountId;
+      fields.push("accountId");
+    }
     if (fields.length > 0) {
       resolution.appliedRules.push({ id: rule.id, name: rule.name, fields });
     }
-    if (resolution.categoryId !== null && resolution.personId !== null) break;
+    if (
+      resolution.categoryId !== null &&
+      resolution.personId !== null &&
+      resolution.workspaceId !== null &&
+      resolution.accountId !== null
+    ) {
+      break;
+    }
   }
 
   return resolution;
+}
+
+export const triadeFamilyKeywords = [
+  "supermercado",
+  "aluguel",
+  "luz",
+  "energia",
+  "enel",
+  "condominio",
+  "internet",
+  "agua",
+  "mercado",
+  "feira",
+  "gas",
+] as const;
+
+export const triadeBusinessKeywords = [
+  "pj",
+  "nota fiscal",
+  "fornecedor",
+  "empresa",
+  "servico pj",
+  "imposto pj",
+  "das",
+  "darf",
+] as const;
+
+export function buildTriadeRulePresets(workspaces: {
+  personalId?: string | null;
+  familyId?: string | null;
+  businessId?: string | null;
+}): Array<Omit<InboxRuleCandidate, "id"> & { presetKey: "business" | "family" | "personal" }> {
+  const presets: Array<Omit<InboxRuleCandidate, "id"> & { presetKey: "business" | "family" | "personal" }> = [];
+
+  if (workspaces.businessId) {
+    presets.push({
+      presetKey: "business",
+      name: "Tríade · Negócio (PJ)",
+      priority: 50,
+      isActive: true,
+      matchMode: "any",
+      conditions: [
+        { field: "originalText", operator: "contains", value: "PJ" },
+        { field: "originalText", operator: "contains", value: "Nota Fiscal" },
+        { field: "originalText", operator: "contains", value: "Fornecedor" },
+      ],
+      categoryId: null,
+      personId: null,
+      workspaceId: workspaces.businessId,
+      accountId: null,
+    });
+  }
+
+  if (workspaces.familyId) {
+    presets.push({
+      presetKey: "family",
+      name: "Tríade · Familiar (Residência)",
+      priority: 60,
+      isActive: true,
+      matchMode: "any",
+      conditions: [
+        { field: "originalText", operator: "contains", value: "Supermercado" },
+        { field: "originalText", operator: "contains", value: "Aluguel" },
+        { field: "originalText", operator: "contains", value: "Luz" },
+        { field: "originalText", operator: "contains", value: "Condomínio" },
+      ],
+      categoryId: null,
+      personId: null,
+      workspaceId: workspaces.familyId,
+      accountId: null,
+    });
+  }
+
+  if (workspaces.personalId) {
+    presets.push({
+      presetKey: "personal",
+      name: "Tríade · Pessoal",
+      priority: 90,
+      isActive: true,
+      matchMode: "any",
+      conditions: [
+        { field: "sourceAppName", operator: "contains", value: "Nubank" },
+      ],
+      categoryId: null,
+      personId: null,
+      workspaceId: workspaces.personalId,
+      accountId: null,
+    });
+  }
+
+  return presets;
 }
 
 function normalizeCondition(condition: InboxRuleCondition): InboxRuleCondition {

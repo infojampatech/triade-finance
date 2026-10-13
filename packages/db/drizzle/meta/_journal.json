@@ -85,6 +85,13 @@
       "when": 1791908388874,
       "tag": "0011_smart_peter_parker",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1791925443839,
+      "tag": "0012_wandering_chat",
+      "breakpoints": true
     }
   ]
 }
