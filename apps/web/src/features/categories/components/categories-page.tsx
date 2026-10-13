@@ -4,7 +4,7 @@ import type {
   ReplaceCategoryInput,
 } from "@openmonetis/validators/categories";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, Tags } from "lucide-react";
+import { Plus, Tags, UploadCloud } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { ProtectedRoute } from "@/components/auth/protected-route";
@@ -16,6 +16,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ApiClientError } from "@/lib/api-client";
+import { OrganizzeSyncDialog } from "@/features/organizze/components/organizze-sync-dialog";
 import {
   useCreateCategoryMutation,
   useDeleteCategoryMutation,
@@ -32,7 +33,9 @@ export function CategoriesPage() {
   const remove = useDeleteCategoryMutation();
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
+  const [organizzeOpen, setOrganizzeOpen] = useState(false);
   const [editing, setEditing] = useState<CategoryOutput | null>(null);
+
   const categories = query.data ?? [];
   function changeOpen(next: boolean) {
     setOpen(next);
@@ -63,10 +66,16 @@ export function CategoriesPage() {
         <section className="app-page project-container min-w-0">
           <PageHeader
             actions={
-              <Button onClick={() => setOpen(true)}>
-                <Plus className="size-4" />
-                Nova categoria
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button onClick={() => setOrganizzeOpen(true)} variant="outline" className="gap-1.5">
+                  <UploadCloud className="size-4" />
+                  Sincronizar Organizze
+                </Button>
+                <Button onClick={() => setOpen(true)}>
+                  <Plus className="size-4" />
+                  Nova categoria
+                </Button>
+              </div>
             }
             breadcrumbs={[{ label: "Visão geral", href: "/dashboard" }, { label: "Organização" }]}
             description="Organize receitas e despesas para manter lançamentos e relatórios consistentes."
@@ -133,6 +142,7 @@ export function CategoriesPage() {
         </section>
       </main>
       <CategoryDialog category={editing} onOpenChange={changeOpen} onSubmit={save} open={open} />
+      <OrganizzeSyncDialog open={organizzeOpen} onOpenChange={setOrganizzeOpen} />
     </ProtectedRoute>
   );
 }

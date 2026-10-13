@@ -6,7 +6,7 @@ import type {
 import type { CategoryOutput } from "@openmonetis/validators/categories";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { Copy, Plus, RefreshCw, Tags, Target } from "lucide-react";
+import { Copy, Plus, RefreshCw, Tags, Target, UploadCloud } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { ProtectedRoute } from "@/components/auth/protected-route";
@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { categoriesQueryOptions } from "@/features/categories/categories.queries";
+import { OrganizzeSyncDialog } from "@/features/organizze/components/organizze-sync-dialog";
 import { buildFilterSlugMap } from "@/features/transactions/transactions.presentation";
 import {
   useCreateBudgetMutation,
@@ -48,6 +49,7 @@ export function BudgetsPage({ onPeriodChange, period }: BudgetsPageProps) {
   const [editingBudget, setEditingBudget] = useState<BudgetOutput | null>(null);
   const [initialCategoryId, setInitialCategoryId] = useState<string | undefined>();
   const [copyOpen, setCopyOpen] = useState(false);
+  const [organizzeOpen, setOrganizzeOpen] = useState(false);
   const overview = budgetsQuery.data;
   const expenseCategories = (categoriesQuery.data ?? []).filter(
     (category) => category.type === "expense",
@@ -101,14 +103,25 @@ export function BudgetsPage({ onPeriodChange, period }: BudgetsPageProps) {
         <section className="app-page project-container">
           <PageHeader
             actions={
-              <Button
-                disabled={loading || availableCategories.length === 0}
-                onClick={openCreate}
-                type="button"
-              >
-                <Plus aria-hidden="true" className="size-4" />
-                Novo orçamento
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={() => setOrganizzeOpen(true)}
+                  type="button"
+                  variant="outline"
+                  className="gap-1.5"
+                >
+                  <UploadCloud aria-hidden="true" className="size-4" />
+                  Sincronizar Organizze
+                </Button>
+                <Button
+                  disabled={loading || availableCategories.length === 0}
+                  onClick={openCreate}
+                  type="button"
+                >
+                  <Plus aria-hidden="true" className="size-4" />
+                  Novo orçamento
+                </Button>
+              </div>
             }
             breadcrumbs={[
               { label: "Visão geral", href: "/dashboard" },
@@ -227,6 +240,8 @@ export function BudgetsPage({ onPeriodChange, period }: BudgetsPageProps) {
         open={copyOpen}
         period={period}
       />
+
+      <OrganizzeSyncDialog open={organizzeOpen} onOpenChange={setOrganizzeOpen} />
     </ProtectedRoute>
   );
 }

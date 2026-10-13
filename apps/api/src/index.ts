@@ -37,6 +37,7 @@ import {
   listPeopleByIdsForUser,
   peopleRepository,
 } from "./repositories/people.repository";
+import { organizzeRepository } from "./repositories/organizze.repository";
 import { personConnectionsRepository } from "./repositories/person-connections.repository";
 import { personSettlementsRepository } from "./repositories/person-settlements.repository";
 import { preferencesRepository } from "./repositories/preferences.repository";
@@ -63,6 +64,7 @@ import { createInstallmentsRoute } from "./routes/installments";
 import { createInvoicesRoute } from "./routes/invoices";
 import { createNotesRoute } from "./routes/notes";
 import { createNotificationsRoute } from "./routes/notifications";
+import { createOrganizzeRoute } from "./routes/organizze";
 import { createPeopleRoute } from "./routes/people";
 import { createPersonConnectionsRoute } from "./routes/person-connections";
 import { createPierreRoute } from "./routes/pierre";
@@ -94,6 +96,7 @@ import { createInstallmentsService } from "./services/installments.service";
 import { createInvoicesService } from "./services/invoices.service";
 import { createNotesService } from "./services/notes.service";
 import { createNotificationsService } from "./services/notifications.service";
+import { createOrganizzeService } from "./services/organizze.service";
 import { createPeopleService } from "./services/people.service";
 import { createPersonConnectionsService } from "./services/person-connections.service";
 import { createPierreService } from "./services/pierre.service";
@@ -227,6 +230,7 @@ const inboxRoute = createInboxRoute(inboxService);
 const inboxRulesRoute = createInboxRulesRoute(createInboxRulesService(inboxRulesRepository));
 const companionInboxRoute = createCompanionInboxRoute(inboxService);
 const pierreRoute = createPierreRoute(createPierreService(inboxService));
+const organizzeRoute = createOrganizzeRoute(createOrganizzeService(organizzeRepository));
 const notificationsRoute = createNotificationsRoute(
   createNotificationsService(
     notificationsRepository,
@@ -338,6 +342,10 @@ app.use("/notes", privateCache);
 app.use("/notes/*", privateCache);
 app.use("/notes", requireAuth);
 app.use("/notes/*", requireAuth);
+app.use("/organizze", privateCache);
+app.use("/organizze/*", privateCache);
+app.use("/organizze", requireAuth);
+app.use("/organizze/*", requireAuth);
 app.use("/transactions", privateCache);
 app.use("/transactions/*", privateCache);
 app.use("/transactions", requireAuth);
@@ -548,6 +556,7 @@ app.route("/notifications", notificationsRoute);
 app.route("/releases", releasesRoute);
 app.route("/api/inbox", companionInboxRoute);
 app.route("/integrations/pierre", pierreRoute);
+app.route("/organizze", organizzeRoute);
 
 app.openapi(
   {
