@@ -43,7 +43,7 @@ export function UserNavigationMenu({
             className="scale-[1.06]"
             src={user?.image?.trim() || defaultAdminPersonAvatarUrl}
           />
-          <AvatarFallback className="bg-primary/10 font-bold text-foreground">
+          <AvatarFallback suppressHydrationWarning className="bg-primary/10 font-bold text-foreground">
             {getInitials(user?.name)}
           </AvatarFallback>
         </Avatar>

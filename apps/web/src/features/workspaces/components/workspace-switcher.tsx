@@ -4,6 +4,7 @@ import { useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -45,9 +46,11 @@ export function WorkspaceSwitcher() {
         <ChevronDown className="size-3.5 opacity-60" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-48">
-        <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
-          Pilares da Tríade
-        </DropdownMenuLabel>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
+            Pilares da Tríade
+          </DropdownMenuLabel>
+        </DropdownMenuGroup>
         <DropdownMenuSeparator />
         {workspaces.map((ws) => {
           const isSelected = ws.id === currentWorkspace.id;

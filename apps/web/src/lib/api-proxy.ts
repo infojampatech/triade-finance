@@ -1,4 +1,4 @@
-const defaultApiInternalUrl = "http://localhost:7001";
+const defaultApiInternalUrl = "http://127.0.0.1:7001";
 const defaultMaximumBodySize = 8 * 1024 * 1024;
 const companionInboxMaximumBodySize = 16 * 1024;
 const companionInboxBatchMaximumBodySize = 256 * 1024;

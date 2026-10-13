@@ -8,8 +8,10 @@ import type { GoogleProfile } from "better-auth/social-providers";
 import { enforcePasswordChangePolicy } from "./middlewares/password-change";
 import { categoriesRepository } from "./repositories/categories.repository";
 import { peopleRepository } from "./repositories/people.repository";
+import { workspacesRepository } from "./repositories/workspaces.repository";
 import { createCategoriesService } from "./services/categories.service";
 import { createPeopleService } from "./services/people.service";
+import { createWorkspacesService } from "./services/workspaces.service";
 import {
   assertProductionSecret,
   getRequiredProductionEnv,
@@ -116,6 +118,7 @@ const sessionUpdateAgeHours = parsePositiveIntegerEnv(
 );
 const categoriesService = createCategoriesService(categoriesRepository);
 const peopleService = createPeopleService(peopleRepository);
+const workspacesService = createWorkspacesService(workspacesRepository);
 
 function requireVerifiedPasskeyUser(userVerified: boolean) {
   if (!userVerified) {
@@ -243,6 +246,7 @@ export const auth = betterAuth({
               providerAvatarUrl: user.image,
             });
             await categoriesService.seedDefaults(user.id);
+            await workspacesService.list(user.id);
           } catch (error) {
             console.error("[Auth] Failed to provision default user data", error);
           }
